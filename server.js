@@ -11,36 +11,27 @@ const io = require('socket.io')(server,{
 )
 
 io.on('connection', (socket) => {
-    const id = socket.handshake.query.id;
-    console.log('A client connected.',id);
+    const name = socket.handshake.query.name;
+    console.log('A client connected.',name,typeof name);
 
-  socket.join(id)
+  socket.join(name)
 
-//   socket.on('send-message', ({ recipients, text,senderid }) => {
-//     console.log(recipients,senderid);
-//     recipients.forEach(recipient => {
-//       console.log('newRecipients',recipient);
-//     socket.broadcast.to(recipient).emit('receive-message',{recieverId: recipient, sender: senderid, text,fromMe:false}
-//     //   ()=>{
-//     //         let obj = {
-//     //             recieverId: recipient, sender: senderid, text,fromMe:false
-//     //           }
-//     //           console.log(obj,'message broadcast');
-//     //           return  {
-//             //     recieverId: recipient, sender: senderid, text,fromMe:false
-//             //   };
-//     //   }
-//        )
-//     })
-//   })
-socket.on('send-message', ({ recipients, text }) => {
-    recipients.forEach(recipient => {
-    //   const newRecipients = recipients.filter(r => r !== recipient)
-    //   newRecipients.push(id)
-      socket.broadcast.to(recipient).emit('receive-message', {
-        recieverId: recipient, senderid: id, text,fromMe:false
-      })
-    })
+  socket.on('sendMessage', (data) => {
+    console.log(data,'reviece from sender');
+    if(Array.isArray(data?.recievername)){
+      data?.recievername.forEach((x) => {
+        console.log(typeof x,x);
+        socket.broadcast.to(x).emit('receiveMessage',{
+          type:'incomming',
+          sendername:data.sendername,
+          text:data.text,
+          recievername:x,
+          fromMe:false,
+          time:new Date()
+        })
+      });
+    } 
+   
   })
     socket.on('disconnect', () => {
       console.log('A client disconnected.');
